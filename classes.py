@@ -95,9 +95,10 @@ class Dot:
         self.x, self.y = 200, 475
         self.vel_x, self.vel_y = 0, 0
         self.acc_x, self.acc_y = 0, 0
-        self.fitness = 0
+        self.fitness = float(0.0)
         self.isBest = False
         self.isDead = False
+        self.reachedGoal = False
 
     def move(self):
         # print("move")
@@ -118,10 +119,12 @@ class Dot:
         # print(self.x, " ", self.y)
 
     def update(self, enemies):
-        if not self.isDead:
+        if not self.isDead and not self.reachedGoal:
             self.move()
             x = self.x
             y = self.y
+            if self.dist(self.x, 800, self.y, 125) < 25:
+                self.reachedGoal = True
             if x < 5 and x > 995 and y < 5 and y > 595:
                 self.isDead = True
             elif x > 190 and x < 215:
@@ -142,3 +145,97 @@ class Dot:
 
     def dist(self, x1, x2, y1, y2):
         return np.sqrt( ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)) )
+
+    def Calculatefitness(self):
+        if (self.reachedGoal):
+            self.fitness = float(1.0/16 + 10000.0/(self.brain.step * self.brain.step))
+        else :
+            d = self.dist(self.x, 800, self.y, 125)
+            self.fitness = float(1.0 / (d * d))
+        print(self.fitness)
+
+    def clone(self):
+        baby = Dot()
+        baby.brain = self.brain.clone()
+        return baby
+
+class Population:
+    def __init__(self, size):
+        self.size = size
+        self.dots = []
+        self.gen = 1
+        self.best_dot = 0
+        self.min_step = 1000
+        self.fitnessSum = float(0.0)
+        for i in range(self.size):
+            self.dots.append(Dot())
+
+    def update(self, enemies):
+        for i in range(self.size):
+            if (self.dots[i].brain.step > self.min_step):
+                self.dots[i].isDead = True
+            else:
+                self.dots[i].update(enemies)
+
+    def calculateAllFitness(self):
+        for i in range(self.size):
+            self.dots[i].Calculatefitness()
+
+    def allDead(self) -> bool:
+        for i in range(self.size):
+            if not self.dots[i].isDead and  not self.dots[i].reachedGoal:
+                return False
+        return True
+
+    def naturalSelection(self):
+        new_gen = []
+        self.setBestDot()
+        self.calculateAllFitness()
+        self.calculateFitnessSum()
+        new_gen.append(self.dots[self.best_dot].clone())
+        new_gen[0].isBest = True
+
+        for i in range(1, self.size):
+            parent = self.selectParent()
+            new_gen.append(parent.clone())
+
+        self.dots = new_gen
+        self.gen += 1
+        self.fitnessSum = 0.0
+
+    def calculateFitnessSum(self):
+        for i in range(self.size):
+            self.fitnessSum = float(float(self.fitnessSum) + float(self.dots[i].fitness))
+        return float(self.fitnessSum)
+
+    def selectParent(self):
+
+        print(self.fitnessSum)
+        r = rand.uniform(0.0, self.fitnessSum)
+
+        runningSum = 0.0
+        test = 0.0
+        for i in range(self.size):
+            runningSum += self.dots[i].fitness
+            if runningSum > r:
+                return self.dots[i]
+            test += self.dots[i].fitness
+
+
+    def mutate(self):
+        for i in range(self.size):
+            self.dots[i].brain.mutate()
+
+    def setBestDot(self):
+        max = 0.0
+        maxIndex = 0
+
+        for i in range(self.size):
+            if self.dots[i].fitness > max:
+                max = self.dots[i].fitness
+                maxIndex = i
+
+        self.best_dot = maxIndex
+
+        if self.dots[self.best_dot].reachedGoal:
+            self.min_step = self.dots[self.best_dot].brain.step

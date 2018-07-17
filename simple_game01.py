@@ -23,11 +23,9 @@ def events(me):
                
 
 
-def loop(enemies, me, br, dots):
+def loop(enemies, me, br):
     for i in enemies:
         i.move()
-    for j in dots:
-        j.update(enemies)
     return me.check(enemies, br)
 
 
@@ -67,6 +65,8 @@ def main():
     screen = pygame.display.set_mode(size, Normal)
     circle_color = 255, 210, 20
     people_color = 200, 180, 255
+    best_color = 250, 10, 10
+    test = Population(500)
     br = True
     while 1:
         enemies = []
@@ -77,21 +77,34 @@ def main():
         me = player(150, 550)
         br = True
         dots = []
-        for i in range(500):
-            dots.append(Dot())
+        # for i in range(500):
+        #     dots.append(Dot())
 
         while br:
             # print(g.mouse.get_pos())
     
             ### defining enemies
+            if (test.allDead()):
+                test.calculateAllFitness()
+                test.naturalSelection()
+                test.mutate()
+                break
+                br = False
+            else:
+                test.update(enemies)
+
+
             events(me)
-            br = loop(enemies, me, br, dots)
+            br = loop(enemies, me, br)
             draw(screen, me)
 
             for i in enemies:
                 pygame.draw.circle(screen, circle_color, [i.x, i.y], i.radius)
-            for j in dots:
-                pygame.draw.circle(screen, people_color, [j.x, j.y], 4)
+            for j in test.dots:
+                if j.isBest:
+                    pygame.draw.circle(screen, best_color, [j.x, j.y], 6)
+                else:
+                    pygame.draw.circle(screen, people_color, [j.x, j.y], 4)
             pygame.display.update()
             # pygame.display.flip()
 
