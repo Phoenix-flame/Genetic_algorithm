@@ -9,15 +9,15 @@ import numpy as np
 class enemy:
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self._speed = 2
-        self.radius = 30
+        self._speed = 4
+        self.radius = 50
 
     def move(self):
         self.x += self._speed
         self.check()
 
     def check(self):
-        if self.x > 800 - self.radius or self.x < 200 + self.radius :
+        if self.x > 800 - self.radius or self.x < 200 + self.radius:
             self._speed = -self._speed
 
     def draw(self, screen):
@@ -47,9 +47,9 @@ class player:
             self.x, self.y = x, y
 
 
-    def check(self, enemies, br):
+    def check(self, enemies):
         for i in enemies:
-            if self.dist(self.x, i.x, self.y, i.y) < 30 :
+            if self.dist(self.x, i.x, self.y, i.y) < (i.radius / 2) + 25:
                 print("Collision")
                 return False
         return True
@@ -64,6 +64,7 @@ class Brain:
         self.size = size
         self.directions = self.random(size)
         self.step = 0
+
     def random(self, size):
         directions = []
         for i in range(size):
@@ -71,17 +72,18 @@ class Brain:
             y = rand.choice([-1, 1])
             directions.append([x, y])
         return directions
+
     def clone(self):
         brain_clone = Brain(self.size)
         for i in range(self.size):
              brain_clone.directions[i] = self.directions[i]
         return brain_clone
+
     def mutate(self):
         mutate_rate = 0.01
         for i in range(self.size):
             r = rand.random()
             if r < mutate_rate:
-                print("ok")
                 self.directions[i] = [rand.choice([-1, 1]), rand.choice([-1, 1])]
 
 
@@ -93,6 +95,8 @@ class Dot:
     def __init__(self):
         self.brain = Brain(1000)
         self.x, self.y = 200, 475
+        # initial position for debugging
+        # self.x, self.y = 500, 300
         self.vel_x, self.vel_y = 0, 0
         self.acc_x, self.acc_y = 0, 0
         self.fitness = float(0.0)
@@ -127,20 +131,30 @@ class Dot:
                 self.reachedGoal = True
             if x < 5 and x > 995 and y < 5 and y > 595:
                 self.isDead = True
-            elif x > 190 and x < 215:
+            elif x > 195 and x < 205:
                 if y > 100 and y < 450:
                     self.isDead = True  
-            if x > 790 and x < 810:
+            if x > 795 and x < 805:
                 if y > 150 and y < 500:
                     self.isDead = True
-            if y > 90 and y < 110:
+            if y > 95 and y < 105:
                 if x > 200 and x < 800:
                     self.isDead = True
-            if y > 490 and y < 510:
+            if y > 495 and y < 505:
                 if x > 200 and x < 800:
                     self.isDead = True
+            if y > 495 and y < 505:
+                if x > 150 and x < 200:
+                    self.isDead = True
+            if y > 450 and y < 500:
+                if x > 145 and x < 155:
+                    self.isDead = True
+            if y > 445 and y < 455:
+                if x > 150 and x < 200:
+                    self.isDead = True
+
             for i in enemies:
-                if self.dist(self.x, i.x, self.y, i.y) < (i.radius / 2) + 10 :
+                if self.dist(self.x, i.x, self.y, i.y) < (i.radius / 2) + 25:
                     self.isDead = True
 
     def dist(self, x1, x2, y1, y2):
@@ -152,7 +166,7 @@ class Dot:
         else :
             d = self.dist(self.x, 800, self.y, 125)
             self.fitness = float(1.0 / (d * d))
-        print(self.fitness)
+        # print(self.fitness)     ## for debugging
 
     def clone(self):
         baby = Dot()
@@ -210,7 +224,7 @@ class Population:
 
     def selectParent(self):
 
-        print(self.fitnessSum)
+        # print(self.fitnessSum)   ## for debugging
         r = rand.uniform(0.0, self.fitnessSum)
 
         runningSum = 0.0

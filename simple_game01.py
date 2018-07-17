@@ -4,6 +4,7 @@ import numpy as np
 from random import randint
 import random as rand
 import numpy as np
+from threading import Thread
 from classes import *
 
 
@@ -23,10 +24,10 @@ def events(me):
                
 
 
-def loop(enemies, me, br):
+def loop(enemies, me):
     for i in enemies:
         i.move()
-    return me.check(enemies, br)
+    return me.check(enemies)
 
 
 def draw(screen, me):
@@ -47,6 +48,11 @@ def draw(screen, me):
 
     pygame.draw.line(screen, black, [up_right_corner[0], up_right_corner[1] + 50], down_right_corner, 5)
 
+    pygame.draw.line(screen, black, down_left_corner, [down_left_corner[0] - 50, down_left_corner[1]], 5)
+
+    pygame.draw.line(screen, black, [down_left_corner[0] - 50, down_left_corner[1]], [down_left_corner[0] - 50, down_left_corner[1] - 50], 5)
+
+    pygame.draw.line(screen, black, [down_left_corner[0] - 50, down_left_corner[1] - 50], [down_left_corner[0], down_left_corner[1] - 50], 5)
     circle_color = 255, 210, 20
     pygame.draw.circle(screen, circle_color, [me.x, me.y], me.radius)
 
@@ -66,21 +72,19 @@ def main():
     circle_color = 255, 210, 20
     people_color = 200, 180, 255
     best_color = 250, 10, 10
-    test = Population(500)
+    test = Population(1000)
     br = True
     while 1:
         enemies = []
-        enemies.append(enemy(230, 200))
-        enemies.append(enemy(770, 300))
-        enemies.append(enemy(230, 400))
+        enemies.append(enemy(250, 200))
+        enemies.append(enemy(750, 300))
+        enemies.append(enemy(250, 400))
         pygame.mouse.set_visible(True)
         me = player(150, 550)
         br = True
-        dots = []
-        # for i in range(500):
-        #     dots.append(Dot())
 
         while br:
+            # t = Thread(target=loop, args=(enemies,me))
             # print(g.mouse.get_pos())
     
             ### defining enemies
@@ -89,13 +93,12 @@ def main():
                 test.naturalSelection()
                 test.mutate()
                 break
-                br = False
             else:
                 test.update(enemies)
 
-
+            br = loop(enemies, me)
             events(me)
-            br = loop(enemies, me, br)
+            # t.start()
             draw(screen, me)
 
             for i in enemies:
@@ -106,7 +109,6 @@ def main():
                 else:
                     pygame.draw.circle(screen, people_color, [j.x, j.y], 4)
             pygame.display.update()
-            # pygame.display.flip()
 
             pressed_key = pygame.key.get_pressed()
             if pressed_key[pygame.K_LEFT]: 
