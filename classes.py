@@ -9,15 +9,15 @@ import numpy as np
 class enemy:
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self._speed = 4
+        self._speed = 1
         self.radius = 50
 
     def move(self):
-        self.x += self._speed
+        self.y += self._speed
         self.check()
 
     def check(self):
-        if self.x > 800 - self.radius or self.x < 200 + self.radius:
+        if self.y < 100 + self.radius or self.y > 500 - self.radius:
             self._speed = -self._speed
 
     def draw(self, screen):
@@ -164,7 +164,7 @@ class Dot:
         if (self.reachedGoal):
             self.fitness = float(1.0/16 + 10000.0/(self.brain.step * self.brain.step))
         else :
-            d = self.dist(self.x, 800, self.y, 125)
+            d = self.dist(self.x, 850, self.y, 125)
             self.fitness = float(1.0 / (d * d))
         # print(self.fitness)     ## for debugging
 

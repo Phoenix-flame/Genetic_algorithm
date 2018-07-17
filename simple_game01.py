@@ -76,9 +76,12 @@ def main():
     br = True
     while 1:
         enemies = []
-        enemies.append(enemy(250, 200))
-        enemies.append(enemy(750, 300))
-        enemies.append(enemy(250, 400))
+        enemies.append(enemy(250, 150))
+        enemies.append(enemy(450, 150))
+        enemies.append(enemy(650, 150))
+        enemies.append(enemy(350, 450))
+        enemies.append(enemy(550, 450))
+        enemies.append(enemy(750, 450))
         pygame.mouse.set_visible(True)
         me = player(150, 550)
         br = True
